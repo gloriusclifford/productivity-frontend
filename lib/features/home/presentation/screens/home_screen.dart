@@ -1,153 +1,115 @@
-import 'package:flutter/material.dart';
-import '../widgets/date_selector.dart';
-import '../widgets/section_header.dart';
-import '../widgets/task_card.dart';
+import 'dart:ui';
 
-class HomeScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:productivity_app_frontend/features/home/presentation/widgets/custom_bottom_bar.dart';
+import '../widgets/home_header.dart';
+import '../widgets/date_strip_selector.dart';
+import '../widgets/section_header.dart';
+import '../widgets/my_journal_card.dart';
+import '../widgets/quick_journal_card.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF436B5C);
-    const backgroundColor = Color(0xFFF3F5F3);
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 3;
+
+  final List<Map<String, String>> _dates = [
+    {'day': 'Mon', 'date': '7'},
+    {'day': 'Tue', 'date': '8'},
+    {'day': 'Wed', 'date': '9'},
+    {'day': 'Thu', 'date': '10'},
+    {'day': 'Fri', 'date': '11'},
+    {'day': 'Sat', 'date': '12'},
+    {'day': 'Sun', 'date': '13'},
+  ];
+
+  @override
+  Widget build(BuildContext context){
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: const Color(0xFFF6F5F2),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('Today', style: TextStyle(color: Colors.grey, fontSize: 14)),
-                      SizedBox(height: 2),
-                      Text(
-                        'Oct 24, Tue',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E2923),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.notifications_outlined, size: 22),
-                      onPressed: () {},
-                    ),
-                  ),
-                ],
+              //1
+              const HomeHeader(name: "Admin", avatarUrl: 'https://i.pravatar.cc/150?img=47'),
+              const SizedBox(height: 20),
+              //2
+              DateStripSelector(
+                  dates: _dates,
+                  selectedIndex: _selectedIndex,
+                  onDateSelected: (index){
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                  },
               ),
               const SizedBox(height: 20),
-
-              // Reusable Date Selector
-              const DateSelector(primaryColor: primaryColor),
-              const SizedBox(height: 24),
-
-              // Section Morning
-              const SectionHeader(title: '☀️ Morning'),
+              //3
+              SectionHeader(
+                title: 'My Schedules',
+                onSeeAllTap: (){}),
               const SizedBox(height: 12),
-              TaskCard(
-                time: '9:00\nAM',
-                title: 'Design System Sync',
-                subtitle: 'Reviewing the new sage palette and typography components.',
-                tag: 'Zoom',
-                tagColor: Colors.blue[50]!,
-                tagTextColor: Colors.blue[700]!,
-                primaryColor: primaryColor,
+              SizedBox(
+                height: 210,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: const [
+                    MyJournalCard(
+                      title: "Let's start your day",
+                      subtitle: 'Begin with a mindful morning reflections.',
+                      backgroundColor: Color(0xFFF9DC85),
+                    ),
+                    SideJournalCard(
+                        title: 'Evening',
+                        backgroundColor: Color(0xFFE5DECE)
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              TaskCard(
-                time: '11:30\nAM',
-                title: 'Greenhouse Visit',
-                subtitle: 'Site inspection for the botanical garden project.',
-                tag: 'Brooklyn',
-                tagColor: Colors.purple[50]!,
-                tagTextColor: Colors.purple[700]!,
-                primaryColor: primaryColor,
+              const SizedBox(height:24),
+              //4
+              SectionHeader(
+                title: 'Quick Journal',
+                onSeeAllTap:(){}),
+              const SizedBox(height: 13),
+              SizedBox(
+                height: 155,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  children: const [
+                    QuickJournalCard(
+                      title: 'Pause & reflect 📝',
+                      subtitle: 'What are you grateful for today?',
+                      backgroundColor: Color(0xFFFCE3DB),
+                      tags: ['Today', 'Personal'],
+                    ),
+                    QuickJournalCard(
+                      title: 'Set Intentions 🌼',
+                      subtitle: 'How do you want to feel?',
+                      backgroundColor: Color(0xFFEBE3FA),
+                      tags: ['Today', 'Family'],
+                    ),
+                    QuickJournalCard(
+                      title: 'Emotions 💭',
+                      subtitle: 'Let it flow...',
+                      backgroundColor: Color(0xFFFFF3CD),
+                      tags: ['Today'],
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 24),
-
-              // Section Afternoon
-              const SectionHeader(title: '🌤️ Afternoon'),
-              const SizedBox(height: 12),
-              TaskCard(
-                time: '2:00\nPM',
-                title: 'Client Workshop',
-                subtitle: 'Discovery phase kickoff meeting with stakeholders.',
-                tag: '# Room 402',
-                tagColor: Colors.orange[50]!,
-                tagTextColor: Colors.orange[800]!,
-                primaryColor: primaryColor,
-              ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 20),
             ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: primaryColor,
-        elevation: 4,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.home_filled, color: primaryColor),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: Icon(Icons.calendar_month, color: Colors.grey[400]),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: Icon(Icons.folder_outlined, color: Colors.grey[400]),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: Icon(Icons.person_outline, color: Colors.grey[400]),
-                  onPressed: () {},
-                ),
-              ],
-            ),
           ),
         ),
       ),

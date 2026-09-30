@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:productivity_app_frontend/features/home/presentation/screens/home_screen.dart';
+import 'package:productivity_app_frontend/app/theme/app_theme.dart';
+import 'package:productivity_app_frontend/app/main_wrapper.dart';
+import 'package:productivity_app_frontend/features/auth/presentation/screens/login_screen.dart';
+import 'package:productivity_app_frontend/features/auth/presentation/screens/register_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,11 +17,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PlanIt',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-      ),
-      home: const HomeScreen(),
+      theme: getPlanItTheme(),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/main': (context) => const MainWrapper(),
+      },
     );
   }
 }
