@@ -1,12 +1,16 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:productivity_app_frontend/features/home/presentation/widgets/custom_bottom_bar.dart';
-import '../widgets/home_header.dart';
-import '../widgets/date_strip_selector.dart';
-import '../widgets/section_header.dart';
-import '../widgets/my_journal_card.dart';
-import '../widgets/quick_journal_card.dart';
+import 'package:intl/intl.dart';
+
+import 'package:productivity_app_frontend/app/theme/app_colors.dart';
+import 'package:productivity_app_frontend/app/theme/app_dimens.dart';
+import 'package:productivity_app_frontend/core/utils/date_x.dart';
+import 'package:productivity_app_frontend/features/home/presentation/widgets/calendar_picker_section.dart';
+import 'package:productivity_app_frontend/features/home/presentation/widgets/daily_rhythm_section.dart';
+import 'package:productivity_app_frontend/features/home/presentation/widgets/header_section.dart';
+import 'package:productivity_app_frontend/features/home/presentation/widgets/little_wins_card.dart';
+import 'package:productivity_app_frontend/features/home/presentation/widgets/moment_grid_section.dart';
+import 'package:productivity_app_frontend/features/home/presentation/widgets/mood_selector_card.dart';
+import 'package:productivity_app_frontend/features/home/presentation/widgets/my_journal_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,99 +20,134 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 3;
-
-  final List<Map<String, String>> _dates = [
-    {'day': 'Mon', 'date': '7'},
-    {'day': 'Tue', 'date': '8'},
-    {'day': 'Wed', 'date': '9'},
-    {'day': 'Thu', 'date': '10'},
-    {'day': 'Fri', 'date': '11'},
-    {'day': 'Sat', 'date': '12'},
-    {'day': 'Sun', 'date': '13'},
-  ];
+  late DateTime _selectedDate;
+  late DateTime _weekStart;
+  int? _selectedMood;
+  int _navIndex = 0;
 
   @override
-  Widget build(BuildContext context){
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now().dateOnly;
+    _weekStart = _selectedDate.startOfWeek;
+  }
+
+  void _selectDate(DateTime date) =>
+      setState(() => _selectedDate = date.dateOnly);
+
+  void _shiftWeek(int weeks) => setState(() {
+    _weekStart = _weekStart.addDays(7 * weeks);
+    _selectedDate = _selectedDate.addDays(7 * weeks);
+  });
+
+  void _goToToday() => setState(() {
+    _selectedDate = DateTime.now().dateOnly;
+    _weekStart = _selectedDate.startOfWeek;
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Bottom bar melayang di atas konten, jadi beri ruang di akhir scroll.
+    final bottomSpace = MediaQuery.paddingOf(context).bottom + 120;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F5F2),
+      backgroundColor: AppColors.background,
+      extendBody: true,
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.only(bottom: bottomSpace),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              //1
-              const HomeHeader(name: "Admin", avatarUrl: 'https://i.pravatar.cc/150?img=47'),
-              const SizedBox(height: 20),
-              //2
-              DateStripSelector(
-                  dates: _dates,
-                  selectedIndex: _selectedIndex,
-                  onDateSelected: (index){
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                  },
+              HeaderSection(
+                userName: 'Alex',
+                streakLabel: '3 mindful days',
+                level: 6,
+                rankTitle: 'Senior Strategist',
+                currentXp: 10,
+                targetXp: 500,
+                hasUnreadNotifications: true,
+                onNotificationTap: () {},
+                onSearchTap: () {},
+                onAvatarTap: () {},
+                onLevelTap: () {},
               ),
-              const SizedBox(height: 20),
-              //3
-              SectionHeader(
-                title: 'My Schedules',
-                onSeeAllTap: (){}),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 210,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: const [
+              Padding(
+                padding:
+                const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 36),
+                    CalendarPickerSection(
+                      weekStart: _weekStart,
+                      selectedDate: _selectedDate,
+                      onDateSelected: _selectDate,
+                      onPreviousWeek: () => _shiftWeek(-1),
+                      onNextWeek: () => _shiftWeek(1),
+                      onTodayTap: _goToToday,
+                    ),
+                    const SizedBox(height: 28),
                     MyJournalCard(
-                      title: "Let's start your day",
-                      subtitle: 'Begin with a mindful morning reflections.',
-                      backgroundColor: Color(0xFFF9DC85),
+                      label: 'Your daily reflection',
+                      title: "Let's start your day.",
+                      description:
+                      "A clear mind begins with a little pause. What's on your mind today?",
+                      buttonLabel: 'Open my journal',
+                      onButtonTap: () {},
                     ),
-                    SideJournalCard(
-                        title: 'Evening',
-                        backgroundColor: Color(0xFFE5DECE)
+                    const SizedBox(height: 20),
+                    // TODO: completed/total dari agenda pada _selectedDate.
+                    const LittleWinsCard(
+                      completed: 0,
+                      total: 0,
+                      xpEarned: 0,
+                    ),
+                    const SizedBox(height: 36),
+                    MomentGridSection(
+                      title: 'A moment for yourself',
+                      subtitle: 'Check in. Breathe out. Begin again.',
+                      items: [
+                        MomentCardData(
+                          icon: Icons.coffee_outlined,
+                          title: 'Pause & reflect',
+                          description: 'A little gratitude goes a long way.',
+                          tag: 'Mindful moment · 3 min',
+                          palette: MomentPalette.sunshine,
+                          onTap: () {},
+                        ),
+                        MomentCardData(
+                          icon: Icons.eco_outlined,
+                          title: 'Set intentions',
+                          description: 'Give your day a gentle direction.',
+                          tag: 'Daily practice · 2 min',
+                          palette: MomentPalette.sage,
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    MoodSelectorCard(
+                      selectedValue: _selectedMood,
+                      onSelected: (option) {
+                        setState(() => _selectedMood = option.value);
+                        // TODO: panggil POST /moods dengan mood_score = option.value.
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    DailyRhythmSection(
+                      title: 'Your daily rhythm',
+                      subtitle:
+                      '${DateFormat('EEE').format(_selectedDate)}, one small step at a time.',
+                      // TODO: isi items dari agenda pada _selectedDate.
+                      items: const [],
+                      onViewAll: () {},
+                      onAddTap: () {},
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height:24),
-              //4
-              SectionHeader(
-                title: 'Quick Journal',
-                onSeeAllTap:(){}),
-              const SizedBox(height: 13),
-              SizedBox(
-                height: 155,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  children: const [
-                    QuickJournalCard(
-                      title: 'Pause & reflect 📝',
-                      subtitle: 'What are you grateful for today?',
-                      backgroundColor: Color(0xFFFCE3DB),
-                      tags: ['Today', 'Personal'],
-                    ),
-                    QuickJournalCard(
-                      title: 'Set Intentions 🌼',
-                      subtitle: 'How do you want to feel?',
-                      backgroundColor: Color(0xFFEBE3FA),
-                      tags: ['Today', 'Family'],
-                    ),
-                    QuickJournalCard(
-                      title: 'Emotions 💭',
-                      subtitle: 'Let it flow...',
-                      backgroundColor: Color(0xFFFFF3CD),
-                      tags: ['Today'],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
