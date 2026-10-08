@@ -5,7 +5,8 @@ import 'package:productivity_app_frontend/app/theme/app_colors.dart';
 import 'package:productivity_app_frontend/app/theme/app_dimens.dart';
 import 'package:productivity_app_frontend/app/theme/app_text_styles.dart';
 import 'package:productivity_app_frontend/core/utils/date_x.dart';
-import 'package:productivity_app_frontend/core/widgets/app_top_bar.dart';
+import 'package:productivity_app_frontend/features/make_space/domain/make_space_models.dart';
+import 'package:productivity_app_frontend/features/make_space/presentation/show_make_space_dialog.dart';
 import 'package:productivity_app_frontend/features/schedule/domain/intention.dart';
 import 'package:productivity_app_frontend/features/schedule/presentation/widgets/add_intention_button.dart';
 import 'package:productivity_app_frontend/features/schedule/presentation/widgets/intention_card_tile.dart';
@@ -96,6 +97,32 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
   }
 
+  /// Opens the "Make a little space" dialog on the intention tab and appends
+  /// the created intention to the local list.
+  Future<void> _newIntention() async {
+    final result = await showMakeSpaceDialog(
+      context,
+      entry: MakeSpaceEntry.chooser,
+      initialTab: MakeSpaceTab.intention,
+      date: _selectedDate,
+    );
+
+    if (result case final IntentionCreated intention) {
+      setState(() {
+        _intentions = [
+          ..._intentions,
+          Intention(
+            id: 'intention-${DateTime.now().microsecondsSinceEpoch}',
+            title: intention.title,
+            category: intention.category.toIntentionCategory(),
+            scheduledAt: intention.scheduledAt,
+            xp: intention.xp,
+          ),
+        ];
+      });
+    }
+  }
+
   // ---- Derived data ---------------------------------------------------------
 
   List<Intention> get _intentionsOfSelectedDay => _intentions
@@ -183,7 +210,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               const SizedBox(height: 28),
               Align(
                 alignment: Alignment.centerLeft,
-                child: AddIntentionButton(onPressed: widget.onNewIntentionTap),
+                child: AddIntentionButton(
+                  onPressed: widget.onNewIntentionTap ?? _newIntention,
+                ),
               ),
               const SizedBox(height: 24),
               ShowUpCard(
@@ -252,4 +281,12 @@ List<Intention> _sampleIntentions(DateTime day) {
       xp: 40,
     ),
   ];
+}
+
+extension on SpaceCategory {
+  IntentionCategory toIntentionCategory() => switch (this) {
+        SpaceCategory.personal => IntentionCategory.personal,
+        SpaceCategory.work => IntentionCategory.work,
+        SpaceCategory.wellbeing => IntentionCategory.wellbeing,
+      };
 }

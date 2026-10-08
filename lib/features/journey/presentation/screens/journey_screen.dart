@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:productivity_app_frontend/app/theme/app_colors.dart';
 import 'package:productivity_app_frontend/app/theme/app_dimens.dart';
 import 'package:productivity_app_frontend/features/journey/domain/journey_models.dart';
+import 'package:productivity_app_frontend/features/make_space/domain/make_space_models.dart';
+import 'package:productivity_app_frontend/features/make_space/presentation/show_make_space_dialog.dart';
 import 'package:productivity_app_frontend/features/journey/presentation/widgets/floating_toast_notifier.dart';
 import 'package:productivity_app_frontend/features/journey/presentation/widgets/monthly_growth_card.dart';
 import 'package:productivity_app_frontend/features/journey/presentation/widgets/mood_check_in_section.dart';
@@ -26,7 +28,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
   late final Map<DateTime, Mood> _moods = {
     _today.subtract(const Duration(days: 2)): Mood.okay,
   };
-  final List<Reflection> _reflections = [
+  List<Reflection> _reflections = [
     Reflection(
       date: DateTime(2026, 10, 8),
       mood: Mood.low,
@@ -80,6 +82,30 @@ class _JourneyScreenState extends State<JourneyScreen> {
     if (mounted) setState(() => _toastVisible = false);
   }
 
+  /// Opens the "Make a little space" dialog on the reflection tab and appends
+  /// the saved reflection to the local list.
+  Future<void> _newReflection() async {
+    final result = await showMakeSpaceDialog(
+      context,
+      entry: MakeSpaceEntry.chooser,
+      initialTab: MakeSpaceTab.reflection,
+    );
+
+    if (result case final ReflectionSaved saved) {
+      setState(() {
+        _reflections = [
+          Reflection(
+            date: DateTime.now().dateOnly,
+            mood: saved.mood.toMood(),
+            title: saved.variant.title,
+            content: saved.thoughts,
+          ),
+          ..._reflections,
+        ];
+      });
+    }
+  }
+
   @override
   void dispose() {
     _toastTimer?.cancel();
@@ -117,8 +143,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                 const SizedBox(height: AppSpacing.section),
                 ReflectionPagesSection(
                   reflections: _reflections,
-                  onNewReflection: () {
-                  },
+                  onNewReflection: _newReflection,
                 ),
               ],
             ),
@@ -132,4 +157,14 @@ class _JourneyScreenState extends State<JourneyScreen> {
       ),
     );
   }
+}
+
+extension on MoodLevel {
+  Mood toMood() => switch (this) {
+        MoodLevel.low => Mood.low,
+        MoodLevel.off => Mood.off,
+        MoodLevel.okay => Mood.okay,
+        MoodLevel.good => Mood.good,
+        MoodLevel.wonderful => Mood.wonderful,
+      };
 }

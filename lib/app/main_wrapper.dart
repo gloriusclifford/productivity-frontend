@@ -3,7 +3,8 @@ import 'package:productivity_app_frontend/app/theme/app_theme.dart';
 import 'package:productivity_app_frontend/core/widgets/app_top_bar.dart';
 import 'package:productivity_app_frontend/features/home/presentation/widgets/custom_bottom_bar.dart';
 import 'package:productivity_app_frontend/features/home/presentation/screens/home_screen.dart';
-import 'package:productivity_app_frontend/features/home/presentation/widgets/header_section.dart';
+import 'package:productivity_app_frontend/features/make_space/domain/make_space_models.dart';
+import 'package:productivity_app_frontend/features/make_space/presentation/show_make_space_dialog.dart';
 import 'package:productivity_app_frontend/features/schedule/presentation/screens/schedule_screen.dart';
 import 'package:productivity_app_frontend/features/journey/presentation/screens/journey_screen.dart';
 import 'package:productivity_app_frontend/features/profile/presentation/screens/profile_screen.dart';
@@ -46,7 +47,8 @@ class _MainWrapperState extends State<MainWrapper> {
           });
         },
         onCreateTap: () {
-          // Callback saat tombol pas tengah (+) ditekan untuk tambah task/journal baru
+          // Tombol "+" membuka dialog "Make a little space" (chooser).
+          showMakeSpaceDialog(context, entry: MakeSpaceEntry.chooser);
         },
       ),
     );

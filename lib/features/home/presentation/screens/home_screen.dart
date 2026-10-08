@@ -11,6 +11,8 @@ import 'package:productivity_app_frontend/features/home/presentation/widgets/lit
 import 'package:productivity_app_frontend/features/home/presentation/widgets/moment_grid_section.dart';
 import 'package:productivity_app_frontend/features/home/presentation/widgets/mood_selector_card.dart';
 import 'package:productivity_app_frontend/features/home/presentation/widgets/my_journal_card.dart';
+import 'package:productivity_app_frontend/features/make_space/domain/make_space_models.dart';
+import 'package:productivity_app_frontend/features/make_space/presentation/show_make_space_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late DateTime _selectedDate;
   late DateTime _weekStart;
   int? _selectedMood;
-  int _navIndex = 0;
 
   @override
   void initState() {
@@ -44,6 +45,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _selectedDate = DateTime.now().dateOnly;
     _weekStart = _selectedDate.startOfWeek;
   });
+
+  Future<void> _openMakeSpace({
+    required MakeSpaceEntry entry,
+    MakeSpaceTab initialTab = MakeSpaceTab.intention,
+  }) {
+    return showMakeSpaceDialog(
+      context,
+      entry: entry,
+      initialTab: initialTab,
+      date: _selectedDate,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +108,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       description:
                       "A clear mind begins with a little pause. What's on your mind today?",
                       buttonLabel: 'Open my journal',
-                      onButtonTap: () {},
+                      onButtonTap: () => _openMakeSpace(
+                        entry: MakeSpaceEntry.chooser,
+                        initialTab: MakeSpaceTab.reflection,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     // TODO: completed/total dari agenda pada _selectedDate.
@@ -115,7 +131,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           description: 'A little gratitude goes a long way.',
                           tag: 'Mindful moment · 3 min',
                           palette: MomentPalette.sunshine,
-                          onTap: () {},
+                          onTap: () => _openMakeSpace(
+                            entry: MakeSpaceEntry.pauseAndReflect,
+                          ),
                         ),
                         MomentCardData(
                           icon: Icons.eco_outlined,
@@ -123,7 +141,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           description: 'Give your day a gentle direction.',
                           tag: 'Daily practice · 2 min',
                           palette: MomentPalette.sage,
-                          onTap: () {},
+                          onTap: () => _openMakeSpace(
+                            entry: MakeSpaceEntry.setIntentions,
+                          ),
                         ),
                       ],
                     ),
@@ -143,7 +163,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       // TODO: isi items dari agenda pada _selectedDate.
                       items: const [],
                       onViewAll: () {},
-                      onAddTap: () {},
+                      onAddTap: () => _openMakeSpace(
+                        entry: MakeSpaceEntry.chooser,
+                        initialTab: MakeSpaceTab.intention,
+                      ),
                     ),
                   ],
                 ),
